@@ -4,3 +4,6 @@ folium
 google
 rich
 protobuf == 3.19.5
+fastapi
+uvicorn[standard]
+pydantic

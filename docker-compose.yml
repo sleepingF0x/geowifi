@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  geowifi-api:
+    build: .
+    container_name: geowifi-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./gw_utils:/app/gw_utils  # 挂载配置文件目录
+      - ./results:/app/results    # 挂载结果目录
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai         # 设置时区 

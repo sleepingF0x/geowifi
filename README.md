@@ -1,4 +1,3 @@
-
 # 📡💘🌎 | geowifi  
 
 Search WiFi geolocation data by BSSID and SSID on different public databases.
@@ -65,7 +64,21 @@ python3 -m pip install -r requirements.txt
 ### Docker ###
 
 ```bash
+# Using docker
 docker build -t geowifi:latest .
+```
+
+### Docker Compose ###
+
+```bash
+# Start the service
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the service
+docker-compose down
 ```
 
 ---
@@ -172,3 +185,100 @@ docker run --rm geowifi:latest -s ssid <input>
 - This project uses some of the research and code used at [iSniff-GPS](https://github.com/hubert3/iSniff-GPS).
 - Thanks to [Micah Hoffman](https://twitter.com/WebBreacher) for his attention and answers to my questions.
 - Thanks to [kennbro](https://twitter.com/kennbroorg) for lending me his scrupulous eyes to give me feedback.
+
+## 🔌 API Usage
+
+The application now provides a RESTful API interface for querying WiFi geolocation data.
+
+### API Endpoints
+
+#### Search WiFi Location
+```bash
+POST http://localhost:8000/search
+```
+
+Request body:
+```json
+{
+    "identifier": "00:11:22:33:44:55",  // BSSID or SSID
+    "search_type": "bssid"              // "bssid" or "ssid"
+}
+```
+
+Example using curl:
+```bash
+# Search by BSSID
+curl -X POST "http://localhost:8000/search" \
+     -H "Content-Type: application/json" \
+     -d '{"identifier": "00:11:22:33:44:55", "search_type": "bssid"}'
+
+# Search by SSID
+curl -X POST "http://localhost:8000/search" \
+     -H "Content-Type: application/json" \
+     -d '{"identifier": "MyWiFi", "search_type": "ssid"}'
+```
+
+Example using Python:
+```python
+import requests
+
+# Search by BSSID
+response = requests.post(
+    "http://localhost:8000/search",
+    json={
+        "identifier": "00:11:22:33:44:55",
+        "search_type": "bssid"
+    }
+)
+print(response.json())
+```
+
+Response format:
+```json
+{
+    "results": [
+        {
+            "module": "google",
+            "bssid": "00:11:22:33:44:55",
+            "latitude": 33.571844,
+            "longitude": -112.123456
+        },
+        {
+            "module": "wigle",
+            "bssid": "00:11:22:33:44:55",
+            "ssid": "MyWiFi",
+            "latitude": 33.571844,
+            "longitude": -112.123456
+        }
+    ]
+}
+```
+
+### Running the API Server
+
+```bash
+# Start the API server
+python api.py
+
+# Or using uvicorn directly
+uvicorn api:app --reload
+```
+
+Using Docker:
+```bash
+# Build and run with Docker
+docker build -t geowifi-api .
+docker run -p 8000:8000 geowifi-api
+
+# Or using Docker Compose (recommended)
+docker-compose up -d    # Start the service
+docker-compose logs -f  # View logs
+docker-compose down    # Stop the service
+```
+
+### Additional Features
+
+- Interactive API documentation available at http://localhost:8000/docs
+- Health check endpoint: GET http://localhost:8000/health
+- Input validation and error handling
+- Async request processing

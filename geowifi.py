@@ -472,8 +472,8 @@ def apple_bssid(bssid_param):
         bssid_response.ParseFromString(response.content[10:])
     except DecodeError as e:
         return f'Failed to decode response: {e}'
-    lat_match = re.search('lat: (\S*)', str(bssid_response))
-    lon_match = re.search('lon: (\S*)', str(bssid_response))
+    lat_match = re.search(r'lat: (\S*)', str(bssid_response))
+    lon_match = re.search(r'lon: (\S*)', str(bssid_response))
     try:
         # Extract the latitude and longitude values from the response
         lat = lat_match.group(1)
@@ -925,53 +925,58 @@ def print_results_table(results, main_color='bright_yellow', secondary_color='br
 
 
 # Set up the argument parser
-parser = argparse.ArgumentParser(description='Search for information about a network with a specific BSSID or SSID.')
-parser.add_argument('identifier', help='The BSSID or SSID of the network to search for.')
-parser.add_argument('-s', '--search-by', choices=['bssid', 'ssid'], default='bssid',
-                    help='Specifies whether to search by BSSID or SSID (default: bssid)')
-parser.add_argument('-o', '--output-format', choices=['map', 'json'], default='html',
-                    help='Specifies the output format for the search results (default: map)')
+def main():
+    parser = argparse.ArgumentParser(description='Search for information about a network with a specific BSSID or SSID.')
+    parser.add_argument('identifier', help='The BSSID or SSID of the network to search for.')
+    parser.add_argument('-s', '--search-by', choices=['bssid', 'ssid'], default='bssid',
+                        help='Specifies whether to search by BSSID or SSID (default: bssid)')
+    parser.add_argument('-o', '--output-format', choices=['map', 'json'], default='html',
+                        help='Specifies the output format for the search results (default: map)')
 
-# Print banner
-banner()
+    # Print banner
+    banner()
 
-# Parse the arguments
-args = parser.parse_args()
+    # Parse the arguments
+    args = parser.parse_args()
 
-# Get the search identifier and search type from the arguments
-identifier = args.identifier
-search_by = args.search_by
-output_format = args.output_format
+    # Get the search identifier and search type from the arguments
+    identifier = args.identifier
+    search_by = args.search_by
+    output_format = args.output_format
 
-# Check if the search identifier is a valid BSSID
-if search_by == 'bssid':
-    if not is_valid_bssid(identifier):
-        console.print(' [:red_circle:] Error: Invalid BSSID')
-        exit(1)
+    # Check if the search identifier is a valid BSSID
+    if search_by == 'bssid':
+        if not is_valid_bssid(identifier):
+            console.print(' [:red_circle:] Error: Invalid BSSID')
+            exit(1)
 
-# Search for information about the network
-if search_by == 'bssid':
-    search_results = search_networks(identifier)
-elif search_by == 'ssid':
-    search_results = search_networks(ssid=identifier)
+    # Search for information about the network
+    if search_by == 'bssid':
+        search_results = search_networks(identifier)
+    elif search_by == 'ssid':
+        search_results = search_networks(ssid=identifier)
 
-print_results_table(search_results)
+    print_results_table(search_results)
 
-# Save the search results in the specified output format
-if output_format == 'map':
-    # Create a map with markers for the search results
-    map = create_map(search_results)
-    # Save the map to an HTML file
-    map.save('results/' + str(args.identifier).replace(':', '_') + '.html')
-    filepath = os.getcwd()
-    console.print(' [:green_circle:] [bright_yellow]Map saved at[/bright_yellow]: [bright_blue]' + str(
-        filepath) + '\\results\\' + str(args.identifier).replace(':', '_') + '.html[/bright_blue]')
-    print()
-elif output_format == 'json':
-    # Save the search results to a JSON file
-    with open('results/' + str(args.identifier).replace(':', '_') + '.json', 'w') as outfile:
-        json.dump(search_results, outfile)
-    filepath = os.getcwd()
-    console.print(' [:green_circle:] [bright_yellow]Json file saved at[/bright_yellow]: [bright_blue]' + str(
-        filepath) + '\\results\\' + str(args.identifier).replace(':', '_') + '.json[/bright_blue]')
-    print()
+    # Save the search results in the specified output format
+    if output_format == 'map':
+        # Create a map with markers for the search results
+        map = create_map(search_results)
+        # Save the map to an HTML file
+        map.save('results/' + str(args.identifier).replace(':', '_') + '.html')
+        filepath = os.getcwd()
+        console.print(' [:green_circle:] [bright_yellow]Map saved at[/bright_yellow]: [bright_blue]' + str(
+            filepath) + '\\results\\' + str(args.identifier).replace(':', '_') + '.html[/bright_blue]')
+        print()
+    elif output_format == 'json':
+        # Save the search results to a JSON file
+        with open('results/' + str(args.identifier).replace(':', '_') + '.json', 'w') as outfile:
+            json.dump(search_results, outfile)
+        filepath = os.getcwd()
+        console.print(' [:green_circle:] [bright_yellow]Json file saved at[/bright_yellow]: [bright_blue]' + str(
+            filepath) + '\\results\\' + str(args.identifier).replace(':', '_') + '.json[/bright_blue]')
+        print()
+
+
+if __name__ == '__main__':
+    main()
