@@ -238,17 +238,31 @@ Response format:
 {
     "results": [
         {
-            "module": "google",
-            "bssid": "00:11:22:33:44:55",
+            "module": "google",        // Google Geolocation Services
+            "bssid": "XX:XX:XX:XX:XX:XX",
             "latitude": 33.571844,
             "longitude": -112.123456
         },
         {
-            "module": "wigle",
-            "bssid": "00:11:22:33:44:55",
-            "ssid": "MyWiFi",
-            "latitude": 33.571844,
+            "module": "apple",         // Apple Location Services
+            "bssid": "XX:XX:XX:XX:XX:XX",
+            "latitude": 33.57198715,
             "longitude": -112.123456
+        },
+        {
+            "module": "wigle",         // Wigle Community Database
+            "bssid": "XX:XX:XX:XX:XX:XX",
+            "ssid": "NetworkName",     // Only Wigle provides SSID
+            "latitude": 33.60998154,
+            "longitude": -112.123456
+        },
+        {
+            "module": "vendor_check",  // MAC Address Vendor Information
+            "vendor": "Vendor Name"
+        },
+        {
+            "module": "combain",       // Combain Positioning Service
+            "error": "Error message"   // Example of error response
         }
     ]
 }
@@ -282,3 +296,44 @@ docker-compose down    # Stop the service
 - Health check endpoint: GET http://localhost:8000/health
 - Input validation and error handling
 - Async request processing
+
+
+#### Data Sources Priority
+
+The results are returned from multiple data sources (`modules`), each with different reliability levels:
+
+1. **Google** (`google`): 
+   - Google Geolocation Services
+   - Highest accuracy when API key is valid
+   - Requires valid API key
+
+2. **Apple** (`apple`): 
+   - Apple Location Services
+   - High accuracy
+   - Based on iOS devices data
+
+3. **Wigle** (`wigle`): 
+   - Community-driven WiFi database
+   - Includes SSID information
+   - Accuracy varies based on community contributions
+   - Requires API key
+
+4. **Combain** (`combain`):
+   - Commercial positioning service
+   - Requires paid API key
+
+5. **Mylnikov** (`mylnikov`):
+   - Open-source WiFi location database
+   - No API key required
+
+6. **Vendor Check** (`vendor_check`):
+   - Not a location source
+   - Provides manufacturer information for the MAC address
+
+#### Location Accuracy
+
+When multiple sources return location data:
+1. Prefer Google/Apple data when available
+2. Compare coordinates from different sources
+3. Consider Wigle data as supplementary information
+4. Use vendor information to validate device context
